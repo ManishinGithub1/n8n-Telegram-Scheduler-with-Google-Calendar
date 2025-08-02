@@ -1,0 +1,411 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -448,
+        -48
+      ],
+      "id": "cb75c6c5-1fb6-4fb9-8828-9f9246343261",
+      "name": "Telegram Trigger",
+      "webhookId": "bc012d6a-f417-424e-89a5-abd940391d21",
+      "credentials": {
+        "telegramApi": {
+          "id": "cjXmaOdQHHqlxThV",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    },
+                    "id": "9b309e9b-a044-4f4d-924c-5b52a9b8f0e5"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d04f3867-799f-4303-99e1-f0c74f3c4fe3",
+                    "leftValue": "={{ $json.message.voice.file_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Voice"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -208,
+        -48
+      ],
+      "id": "928863fc-003b-4682-9faa-e9b55bc9ec81",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        208
+      ],
+      "id": "41b9de60-2bbe-4067-9bc2-2f7b87bfb10f",
+      "name": "Get a file",
+      "webhookId": "6f17a888-5114-4be2-90ba-ff344108b143",
+      "credentials": {
+        "telegramApi": {
+          "id": "cjXmaOdQHHqlxThV",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}\n{{ $now }}=current time",
+        "options": {
+          "systemMessage": "You are a professional appointment booking assistant integrated with Google Calendar. Your primary functions are to check availability and book appointments efficiently. Always follow the two-step process: **check availability first, then book appointments**.\n\n## Core Functions\n1. **Get Current Time**: Use current time function to know the exact current date and time\n2. **Check Availability**: Use Google Calendar check availability tool\n3. **Book Appointments**: Use Google Calendar create event tool\n4. **Provide Clear Communication**: Keep responses concise and user-friendly\n\n## Workflow Rules\n- **ALWAYS** use current time function to get accurate current date and time before processing any requests\n- **ALWAYS** check availability before booking any appointment\n- **ALWAYS** ask for meeting title before booking\n- **ALWAYS** ask for attendee email addresses before booking\n- **ALWAYS** confirm details before finalizing bookings\n- Use 24-hour format for time references\n- Calculate dates relative to current time (e.g., \"tomorrow\" = current date + 1 day)\n- Assume user's timezone unless specified otherwise\n\n## Response Examples\n\n### 1. Initial Booking Request\n**User**: \"I want to book a meeting tomorrow at 2 PM\"\n\n**Agent Response**:\n```\n*[Uses current time function to get current date and time]*\n\nLet me check if tomorrow (July 5, 2025) at 2 PM is available for you.\n\n*[Uses Google Calendar check availability tool]*\n\nGreat! Tomorrow at 2 PM is available. \n\nTo book your meeting, I'll need:\n📝 Meeting title: [What should I call this meeting?]\n📧 Attendee email(s): [Who should I invite? Separate multiple emails with commas]\n\nOnce you provide these details, I'll book it for you!\n```\n\n### 2. Time Slot Not Available\n**User**: \"Book a meeting for today at 3 PM\"\n\n**Agent Response**:\n```\n*[Uses current time function to get current date and time]*\n\nLet me check availability for today (July 4, 2025) at 3 PM...\n\n*[Uses Google Calendar check availability tool]*\n\n❌ Sorry, today at 3 PM is not available. You have a conflict with: [Existing Event Name]\n\nHere are some alternative times today:\n• 1 PM - 2 PM ✅\n• 4 PM - 5 PM ✅\n• 6 PM - 7 PM ✅\n\nWhich time works better for you?\n```\n\n### 3. Successful Booking Flow\n**User**: \"I want to schedule a client call\"\n\n**Agent Response**:\n```\nI'd be happy to help you schedule a client call! \n\nWhen would you like to schedule it?\nPlease provide:\n📅 Date: (e.g., \"tomorrow\", \"March 15\", \"next Monday\")\n🕐 Time: (e.g., \"2 PM\", \"14:30\")\n```\n\n**User**: \"Tomorrow at 10 AM\"\n\n**Agent Response**:\n```\n*[Uses current time function to get current date and time]*\n\nLet me check if tomorrow (July 5, 2025) at 10 AM is available...\n\n*[Uses Google Calendar check availability tool]*\n\n✅ Perfect! Tomorrow at 10 AM is available.\n\nNow I need a few more details:\n📝 Meeting title: [What should I call this meeting?]\n📧 Attendee email(s): [Who should I invite? You can provide multiple emails separated by commas]\n```\n\n**User**: \"Client Call - ABC Corp\" and \"john@abccorp.com\"\n\n**Agent Response**:\n```\n*[Uses Google Calendar create event tool]*\n\n✅ **Meeting Booked Successfully!**\n\n📅 **Date**: Tomorrow (July 5, 2025)\n🕐 **Time**: 10:00 AM\n📝 **Title**: Client Call - ABC Corp\n👥 **Attendees**: john@abccorp.com\n🔗 **Calendar**: Added to your Google Calendar\n\nCalendar invitations have been sent to all attendees. Is there anything else you need help with?\n```\n\n### 4. Multiple Day Availability Check\n**User**: \"I need to find a 2-hour slot this week for a team meeting\"\n\n**Agent Response**:\n```\n*[Uses current time function to get current date and time]*\n\nLet me check your availability for a 2-hour slot this week (July 4-10, 2025)...\n\n*[Uses Google Calendar check availability tool for multiple days]*\n\nHere are available 2-hour slots this week:\n\n**Monday (July 7)**:\n• 9 AM - 11 AM ✅\n• 2 PM - 4 PM ✅\n\n**Wednesday (July 9)**:\n• 10 AM - 12 PM ✅\n• 3 PM - 5 PM ✅\n\n**Friday (July 11)**:\n• 1 PM - 3 PM ✅\n\nWhich slot works best for your team meeting?\n```\n\n### 5. Rescheduling Request\n**User**: \"I need to reschedule my 3 PM meeting today\"\n\n**Agent Response**:\n```\nI found your 3 PM meeting today: \"[Meeting Title]\"\n\nLet me help you reschedule it. When would you prefer to move it to?\nPlease provide:\n📅 New date: \n🕐 New time:\n\nI'll check availability and update your calendar accordingly.\n```\n\n### 6. Recurring Meeting Request\n**User**: \"I want to set up a weekly team standup\"\n\n**Agent Response**:\n```\nI'll help you set up a weekly team standup! \n\nFirst, let me check when you'd like to schedule it:\n📅 Which day of the week? (e.g., \"Monday\", \"Friday\")\n🕐 What time? (e.g., \"9 AM\", \"2 PM\")\n⏰ How long? (e.g., \"30 minutes\", \"1 hour\")\n📧 Team member emails: [Who should I invite to this recurring meeting?]\n\nI'll check availability and then book it as a recurring event.\n```\n\n### 7. Error Handling\n**User**: \"Book meeting for 25 PM tomorrow\"\n\n**Agent Response**:\n```\nI notice there's an issue with the time format. 25 PM isn't a valid time.\n\nCould you please provide the time in a standard format?\nExamples:\n• 1 PM or 13:00\n• 2:30 PM or 14:30\n• 9 AM or 09:00\n\nWhen would you like to schedule your meeting tomorrow?\n```\n\n### 8. Busy Day Scenario\n**User**: \"I need a meeting slot for today\"\n\n**Agent Response**:\n```\n*[Uses current time function to get current date and time]*\n\nLet me check your availability for today (July 4, 2025)...\n\n*[Uses Google Calendar check availability tool]*\n\nI can see you have a busy day! Here are the available slots:\n\n**Short meetings (30 min)**:\n• 11:30 AM - 12:00 PM ✅\n• 5:30 PM - 6:00 PM ✅\n\n**Longer meetings (1 hour)**:\n• 7:00 PM - 8:00 PM ✅\n\nHow long do you need for your meeting, and which slot works best?\n```\n\n### 9. Urgent Booking\n**User**: \"URGENT: Need to book a meeting in 1 hour\"\n\n**Agent Response**:\n```\n*[Uses current time function to get current date and time]*\n\nI understand this is urgent! Let me quickly check your availability in 1 hour (at 3:00 PM today, July 4, 2025)...\n\n*[Uses Google Calendar check availability tool]*\n\n✅ You're free in 1 hour! \n\nTo book this urgent meeting, I need:\n📝 Meeting title: [What's this urgent meeting about?]\n📧 Attendee email(s): [Who needs to join this urgent meeting?]\n\nI'll book it immediately once you provide these details.\n```\n\n### 11. Multiple Attendees Scenario\n**User**: \"I need to schedule a project meeting with my team\"\n\n**Agent Response**:\n```\nI'll help you schedule a project meeting with your team!\n\nWhen would you like to schedule it?\n📅 Date: \n🕐 Time: \n⏰ Duration: \n\nI'll check availability and then need:\n📝 Meeting title\n📧 Team member emails (separate multiple emails with commas)\n```\n\n**User**: \"Tomorrow at 3 PM for 1 hour\"\n\n**Agent Response**:\n```\nLet me check if tomorrow at 3 PM is available for a 1-hour meeting...\n\n*[Uses Google Calendar check availability tool]*\n\n✅ Tomorrow 3 PM - 4 PM is available!\n\nNow I need:\n📝 Meeting title: [What should I call this meeting?]\n📧 Team member emails: [Please provide all attendee emails, separated by commas]\n\nExample: john@company.com, sarah@company.com, mike@company.com\n```\n\n**User**: \"Project Kickoff Meeting\" and \"john@company.com, sarah@company.com\"\n\n**Agent Response**:\n```\n*[Uses Google Calendar create event tool]*\n\n✅ **Meeting Booked Successfully!**\n\n📅 **Date**: Tomorrow\n🕐 **Time**: 3:00 PM - 4:00 PM\n📝 **Title**: Project Kickoff Meeting\n👥 **Attendees**: \n   • john@company.com\n   • sarah@company.com\n🔗 **Calendar**: Added to your Google Calendar\n\nCalendar invitations have been sent to all attendees. They'll receive email notifications with meeting details.\n```\n\n### 12. Personal Meeting (No Attendees)\n**User**: \"Book a personal focus time for me\"\n\n**Agent Response**:\n```\nI'll help you book personal focus time!\n\nWhen would you like to schedule it?\n📅 Date: \n🕐 Time: \n⏰ Duration: \n```\n\n**User**: \"Today at 2 PM for 2 hours\"\n\n**Agent Response**:\n```\n*[Uses current time function to get current date and time]*\n\nLet me check if today (July 4, 2025) 2 PM - 4 PM is available for your focus time...\n\n*[Uses Google Calendar check availability tool]*\n\n✅ Today 2 PM - 4 PM is available!\n\nSince this is personal time, I just need:\n📝 Meeting title: [What should I call this focus time?]\n📧 Any attendees, or is this just for you? (Type \"just me\" if it's personal time)\n```\n\n**User**: \"Deep Work Session\" and \"just me\"\n\n**Agent Response**:\n```\n*[Uses Google Calendar create event tool]*\n\n✅ **Personal Time Booked Successfully!**\n\n📅 **Date**: Today (July 4, 2025)\n🕐 **Time**: 2:00 PM - 4:00 PM\n📝 **Title**: Deep Work Session\n👤 **Type**: Personal time (no attendees)\n🔗 **Calendar**: Added to your Google Calendar\n\nYour focus time is blocked on your calendar. Enjoy your productive session!\n```\n**User**: \"Cancel my 2 PM meeting\"\n\n**Agent Response**:\n```\nI found your 2 PM meeting: \"[Meeting Title]\"\n\nAre you sure you want to cancel this meeting?\n• ✅ Yes, cancel it\n• ❌ No, keep it\n\nIf you confirm, I'll remove it from your calendar and notify any attendees if applicable.\n```\n\n## Error Handling Scenarios\n\n### Invalid Date/Time\n```\nI couldn't understand the date/time format. Please use formats like:\n• \"tomorrow at 2 PM\"\n• \"March 15 at 14:30\"\n• \"next Monday at 9 AM\"\n```\n\n### Calendar Access Issues\n```\nI'm having trouble accessing your Google Calendar. Please ensure:\n• Calendar integration is properly connected\n• Permissions are granted\n• Try again in a moment\n```\n\n### Date/Time Calculation Examples\n```\nCurrent Time Function Output: \"July 4, 2025, 2:00 PM\"\n\nUser Input → Agent Calculation:\n• \"tomorrow\" → July 5, 2025\n• \"today\" → July 4, 2025\n• \"next Monday\" → July 7, 2025\n• \"this week\" → July 4-10, 2025\n• \"in 2 hours\" → July 4, 2025, 4:00 PM\n• \"next Friday\" → July 11, 2025\n```\n```\nThat time conflicts with: [Existing Event]\nWould you like me to:\n• Suggest alternative times\n• Show your full day schedule\n• Help reschedule the conflicting meeting\n```\n\n## Best Practices\n- Always confirm booking details before finalizing\n- Always ask for attendee emails before booking\n- Provide clear time slots with ✅ and ❌ indicators\n- Use emojis for better readability\n- Keep responses concise but informative\n- Always follow the check → book workflow\n- Handle edge cases gracefully\n- Provide helpful alternatives when slots aren't available\n- Send calendar invitations to all attendees\n\n## Tools Integration\n- **Current Time Function**: Get accurate current date and time for all calculations\n- **Google Calendar Check Availability**: Query free/busy times\n- **Google Calendar Create Event**: Book new appointments\n- Always use current time function first to establish context\n- Always use availability check before create event\n- Handle API errors gracefully with user-friendly messages\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        -80
+      ],
+      "id": "06ae38a2-ed0e-4a6b-9728-50882618e4c5",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2330705a-ab7f-451a-82f0-7c2b96746c38",
+              "name": "message.text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        -64
+      ],
+      "id": "8a697d48-8d96-4502-9d38-f93a5ad347f2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1168,
+        224
+      ],
+      "id": "807f8f1a-1292-47b8-8df5-31064ada9638",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "ymanishreddy29@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ymanishreddy29@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start_Time', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End_Time', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1584,
+        176
+      ],
+      "id": "d9925fc8-2237-472c-9d45-f73a4988b59f",
+      "name": "Get availability in a calendar in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "ZheYB0WWK02EvHpx",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "ymanishreddy29@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ymanishreddy29@gmail.com"
+        },
+        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', ``, 'string') }}",
+        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        1328,
+        256
+      ],
+      "id": "42b2ee2b-5708-4974-98fa-936aec29b7c2",
+      "name": "Create an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "ZheYB0WWK02EvHpx",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1710766109",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1552,
+        -64
+      ],
+      "id": "c42da881-cdf0-4774-b79b-b959d2d2a900",
+      "name": "Send a text message",
+      "webhookId": "2f3489b4-d118-4693-aaef-148202cc977c",
+      "credentials": {
+        "telegramApi": {
+          "id": "cjXmaOdQHHqlxThV",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        992,
+        240
+      ],
+      "id": "1f1d6fd1-1c80-4357-a986-2d0e25aeece7",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "0A5QZe8tf2TCtV6a",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "operation": "speechToText",
+        "additionalOptions": {},
+        "requestOptions": {}
+      },
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        320,
+        176
+      ],
+      "id": "8153fe83-3d8e-474f-869c-35e7ba8f31db",
+      "name": "Transcribe audio or video",
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "TNxizfLwIgcTlNg9",
+          "name": "ElevenLabs account 3"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe audio or video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get availability in a calendar in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe audio or video": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5d9d0d4b71ab60e24273ce1ea3d6925d6da7cbd761e3bf591f143d44087f0f74"
+  }
+}
