@@ -27,7 +27,7 @@ An automated chatbot built using **n8n** and **Telegram Bot API**, designed to *
 ---
 
 
-##✅ Steps to Import JSON in n8n
+✅ Steps to Import JSON in n8n
 Open n8n Editor UI:
 
   Go to your local or cloud instance of n8n (e.g., http://localhost:5678 or your hosted n8n.cloud URL).
