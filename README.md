@@ -25,3 +25,22 @@ An automated chatbot built using **n8n** and **Telegram Bot API**, designed to *
 |  APIs            | Workflow triggers and automation    |
 
 ---
+
+
+##✅ Steps to Import JSON in n8n
+Open n8n Editor UI:
+
+  Go to your local or cloud instance of n8n (e.g., http://localhost:5678 or your hosted n8n.cloud URL).
+
+  Click the Menu (☰ or Three Lines) in the Top Left Corner
+
+--> Select “Import from File” or "Import workflow"
+
+--> Choose Your .json File:
+
+--> Upload the workflow JSON file you’ve downloaded or saved.
+
+--> Once uploaded, the workflow will appear in the editor.
+
+--> You can now review or run it.
+
